@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>StockMate – AI Investing Companion</title>
+<style>
+:root{--bg:#f3f5f9;--card:#fff;--tx:#1a2030;--mut:#6a7388;--bd:#e3e7ef;--ac:#4f46e5;--ac2:#06b6d4;--acx:#fff;--me:#eceafd;--up:#16a34a;--dn:#dc2626;--warn:#fff4d6;--warnt:#7a5b00;--sh:0 1px 3px rgba(20,30,60,.08),0 6px 20px rgba(20,30,60,.05);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1118;--card:#171b25;--tx:#e9ecf4;--mut:#98a1b8;--bd:#272d3c;--ac:#818cf8;--ac2:#22d3ee;--acx:#0e1118;--me:#242a52;--up:#4ade80;--dn:#f87171;--warn:#352b0c;--warnt:#f0d27a;--sh:none}}
+:root[data-theme="dark"]{--bg:#0e1118;--card:#171b25;--tx:#e9ecf4;--mut:#98a1b8;--bd:#272d3c;--ac:#818cf8;--ac2:#22d3ee;--acx:#0e1118;--me:#242a52;--up:#4ade80;--dn:#f87171;--warn:#352b0c;--warnt:#f0d27a;--sh:none}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.55 "Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.app{max-width:960px;margin:0 auto;padding:14px;display:flex;flex-direction:column;gap:12px;min-height:100vh}
+.hero{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;border-radius:18px;padding:16px 18px;box-shadow:var(--sh);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.hero h1{margin:0;font-size:21px;letter-spacing:-.3px}.hero p{margin:2px 0 0;font-size:13px;opacity:.9}
+.tabs{display:flex;gap:4px;background:rgba(255,255,255,.18);padding:4px;border-radius:12px}
+.tabs button{background:transparent;border:0;color:#fff;padding:7px 13px;border-radius:9px;font-weight:600}
+.tabs button.on{background:#fff;color:#4338ca}
+button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:7px 13px;transition:.15s}
+button:hover{transform:translateY(-1px)}
+button.pri{background:var(--ac);color:var(--acx);border-color:var(--ac);font-weight:600}
+button.on{background:var(--ac);color:var(--acx);border-color:var(--ac)}
+button:disabled{opacity:.5}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px;box-shadow:var(--sh)}
+.alerts{display:flex;flex-direction:column;gap:6px}
+.alert{background:var(--warn);color:var(--warnt);border-radius:10px;padding:8px 12px;font-size:13.5px}
+.note{font-size:12.5px;color:var(--mut)}
+.chat{display:grid;grid-template-columns:210px 1fr;gap:12px}
+@media(max-width:680px){.chat{grid-template-columns:1fr}}
+.list{display:flex;flex-direction:column;gap:6px;max-height:56vh;overflow-y:auto;margin-top:8px}
+.item{display:flex;gap:4px}.item button:first-child{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msgs{display:flex;flex-direction:column;gap:9px;height:52vh;overflow-y:auto;padding:4px}
+.m{padding:9px 13px;border-radius:14px;max-width:88%;white-space:pre-wrap;word-wrap:break-word}
+.m.user{align-self:flex-end;background:var(--me);border-bottom-right-radius:4px}
+.m.assistant{align-self:flex-start;background:var(--bg);border:1px solid var(--bd);border-bottom-left-radius:4px}
+.row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+input,textarea,select{font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);min-width:0}
+.row>input[type=text]{flex:1}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.chips button{font-size:12px;padding:3px 10px;color:var(--mut);border-radius:99px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin-top:12px}
+.sym{font-size:18px;font-weight:700}.price{font-size:22px;font-weight:700}
+.up{color:var(--up)}.dn{color:var(--dn)}
+.pill{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:var(--bg);border:1px solid var(--bd);margin:2px 4px 2px 0;color:var(--mut)}
+.task{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--bd)}
+.task span{flex:1}.task.done span{text-decoration:line-through;color:var(--mut)}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mut)}
+.form input,.form select,.form textarea{color:var(--tx)}
+body{background:radial-gradient(900px 420px at 8% -8%,color-mix(in srgb,var(--ac) 18%,transparent),transparent),radial-gradient(700px 380px at 100% 0,color-mix(in srgb,var(--ac2) 14%,transparent),transparent),var(--bg);background-attachment:fixed}
+.hero{border-radius:22px;padding:20px 22px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-40px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.14)}
+.hero h1{font-size:26px}
+.card{border-radius:20px;backdrop-filter:blur(6px)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.stat{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:10px 14px;box-shadow:var(--sh)}
+.stat .n{font-size:20px;font-weight:700}
+.m{animation:up .25s ease;line-height:1.6}
+.m.user{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff}
+.m.assistant::before{content:"✦ StockMate";display:block;font-size:11px;font-weight:700;color:var(--ac);margin-bottom:3px;letter-spacing:.3px}
+.m.typing::after{content:"●●●";letter-spacing:4px;color:var(--ac);animation:bl 1s infinite}
+@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes bl{50%{opacity:.25}}
+.effort{display:inline-flex;background:var(--bg);border:1px solid var(--bd);border-radius:99px;padding:3px}
+.effort button{border:0;background:transparent;border-radius:99px;padding:5px 14px;font-size:13px;font-weight:600;color:var(--mut)}
+.effort button.on{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;box-shadow:0 2px 8px rgba(79,70,229,.35)}
+#wGrid .card:hover{transform:translateY(-3px);transition:.2s}
+.sym{background:linear-gradient(135deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.alert{border-left:4px solid var(--warnt)}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--ac);outline-offset:1px}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="hero">
+  <div><h1>📈 StockMate</h1><p>Your AI investing companion that remembers you</p></div>
+  <div class="tabs"><button id="t-chat" class="on">💬 Chat</button><button id="t-watch">⭐ Watchlist</button><button id="t-tasks">✅ Tasks</button><button id="t-prof">👤 Profile</button></div>
+</div>
+<div class="stats" id="stats"></div>
+<div class="alerts" id="alerts"></div>
+
+<div id="v-chat" class="chat">
+  <div class="card"><button class="pri" id="newChat" style="width:100%">+ New chat</button><div class="list" id="chatList"></div></div>
+  <div class="card">
+    <div class="msgs" id="msgs"></div><div class="chips" id="chips"></div>
+    <div class="row" style="justify-content:space-between;align-items:center"><div class="effort" id="effort"><button data-e="low">⚡ Low</button><button data-e="medium">⚖️ Medium</button><button data-e="high">🧠 High</button></div><span class="note" id="effNote"></span></div>
+    <div class="row" style="margin-top:8px"><input type="text" id="inp" placeholder="Ask about a stock, timing, or your plan…"><button class="pri" id="send">Send</button><button id="stop" hidden>■ Stop</button></div>
+    <div class="note" style="margin-top:8px" id="memNote"></div>
+  </div>
+</div>
+
+<div id="v-watch" class="card" hidden>
+  <div class="row" style="margin-top:0">
+    <input type="text" id="wSym" placeholder="Ticker (e.g. AAPL)" style="max-width:150px;text-transform:uppercase">
+    <input type="date" id="wEarn" title="Next earnings date">
+    <input type="number" id="wBuy" step="any" placeholder="Buy below $" style="width:120px">
+    <input type="number" id="wSell" step="any" placeholder="Sell above $" style="width:120px">
+    <button class="pri" id="wAdd">Add</button>
+  </div>
+  <div class="note" style="margin-top:8px">Enter each stock's current price from your brokerage to track it over time. Alerts use the latest figure you entered, and appear here when you open the app.</div>
+  <div class="grid" id="wGrid"></div>
+</div>
+
+<div id="v-tasks" class="card" hidden>
+  <div class="row" style="margin-top:0"><input type="text" id="tIn" placeholder="Add a task, e.g. “Review AAPL earnings”"><input type="date" id="tDue"><button class="pri" id="tAdd">Add</button></div>
+  <div id="taskList"></div>
+</div>
+
+<div id="v-prof" class="card" hidden>
+  <div class="form">
+    <label>Main goal<select id="pGoal"><option>Long-term growth</option><option>Regular income</option><option>Preserve capital</option><option>Speculation / short-term</option></select></label>
+    <label>Risk tolerance<select id="pRisk"><option>Low</option><option>Medium</option><option>High</option></select></label>
+    <label>Time horizon<select id="pHor"><option>Under 1 year</option><option>1–5 years</option><option>5–10 years</option><option>10+ years</option></select></label>
+    <label>Monthly amount to invest ($)<input type="number" id="pAmt" min="0"></label>
+  </div>
+  <label class="note" style="display:block;margin-top:12px">Holdings, constraints, anything else the AI should know<textarea id="pNotes" rows="4" style="width:100%;margin-top:4px"></textarea></label>
+  <div class="note" style="margin-top:10px">This profile, your watchlist figures and what you've discussed are used to tailor the AI's guidance over time. It's still educational analysis, not licensed financial advice.</div>
+  <div class="row"><button id="clrMem">Clear AI memory</button></div>
+  <div class="note" id="memView" style="margin-top:8px"></div>
+</div>
+<div class="note" id="status"></div>
+</div>
+
+<script>
+const SYSTEM=`You are StockMate, a friendly investing research assistant that remembers the user across chats. Use the provided profile, watchlist figures, tasks, memory and past chats to personalize answers. For "should I buy / when to buy / when to avoid" questions give: key drivers, bull case, bear case, valuation and timing frameworks (earnings dates, trend, DCA vs lump sum, position sizing relative to the user's risk and horizon), conditions that favor buying, red flags that favor waiting, and a plain-language lean with reasoning. Reference the user's own entered prices and targets and note how old those figures are. You have no live market data and your knowledge may be dated; say so and ask for current figures when needed. Never guarantee returns or certainty on timing. Briefly remind them this is educational, not licensed financial advice. Follow the ANSWER DEPTH setting for length.`;
+const CHIPS=["Is AAPL a good buy now?","Review my watchlist","When should I avoid buying a stock?","What should I do before earnings?"];
+let S={chats:[],tasks:[],watch:[],profile:{},memory:"",effort:"medium"},doc=null,sample=null,busy=false,ctl=null;
+const $=id=>document.getElementById(id),uid=()=>Math.random().toString(36).slice(2,10);
+const today=()=>new Date().toISOString().slice(0,10);
+const dayDiff=d=>Math.round((new Date(d+"T00:00:00")-new Date(today()+"T00:00:00"))/864e5);
+const money=n=>"$"+Number(n).toLocaleString(undefined,{maximumFractionDigits:2});
+const last=w=>w.prices[w.prices.length-1];
+
+async function load(){
+  try{const user=await claude.use("user"),db=await claude.use("db");
+    if(user&&db){const id=await user.id();doc=db.collection("data/users/"+id).doc("state");
+      const s=await Promise.race([doc.get(),new Promise((_,r)=>setTimeout(()=>r(0),10000))]);
+      if(s.exists)Object.assign(S,s.data());
+      $("status").textContent="Everything is saved to your account.";}}catch(e){}
+  if(!doc){try{const r=JSON.parse(localStorage.getItem("stockmate2")||"null");if(r)Object.assign(S,r)}catch(e){}$("status").textContent="Saved in this browser only.";}
+  try{sample=await claude.use("sample")}catch(e){}
+  S.chats=S.chats||[];S.tasks=S.tasks||[];S.watch=S.watch||[];S.profile=S.profile||{};S.memory=S.memory||"";S.effort=S.effort||"medium";
+  if(!S.chats.length)newChat(true);else S.cur=S.chats[0].id;
+  initProfile();render();
+}
+let st=null;
+function save(){clearTimeout(st);st=setTimeout(async()=>{
+  const d={chats:S.chats.slice(0,25).map(c=>({...c,msgs:c.msgs.slice(-40)})),tasks:S.tasks,watch:S.watch,profile:S.profile,memory:S.memory,effort:S.effort};
+  try{if(doc)await doc.set(d);else localStorage.setItem("stockmate2",JSON.stringify(d))}catch(e){$("status").textContent="Couldn't save right now."}
+},400)}
+function newChat(q){const c={id:uid(),title:"New chat",msgs:[]};S.chats.unshift(c);S.cur=c.id;if(!q){render();save()}}
+const cur=()=>S.chats.find(c=>c.id===S.cur);
+
+function alertsList(){const a=[];
+  S.watch.forEach(w=>{const l=last(w);
+    if(w.earn){const d=dayDiff(w.earn);if(d>=0&&d<=7)a.push(`📅 ${w.sym} reports earnings ${d===0?"today":d===1?"tomorrow":"in "+d+" days"} (${w.earn}).`)}
+    if(l){if(w.buy&&l.p<=w.buy)a.push(`🟢 ${w.sym} (${money(l.p)}) is at or below your buy-below target of ${money(w.buy)}.`);
+      if(w.sell&&l.p>=w.sell)a.push(`🔴 ${w.sym} (${money(l.p)}) is at or above your sell-above target of ${money(w.sell)}.`);
+      if(-dayDiff(l.t)>=3)a.push(`⏱ ${w.sym}'s price is ${-dayDiff(l.t)} days old. Update it for accurate alerts.`)}
+    else a.push(`✏️ Enter a current price for ${w.sym}.`)});
+  S.tasks.forEach(t=>{if(!t.done&&t.due){const d=dayDiff(t.due);if(d<0)a.push(`⚠️ Overdue task: ${t.text}`);else if(d<=1)a.push(`🔔 Task due ${d===0?"today":"tomorrow"}: ${t.text}`)}});
+  return a}
+function spark(w){const ns="http://www.w3.org/2000/svg",s=document.createElementNS(ns,"svg");s.setAttribute("viewBox","0 0 200 40");s.setAttribute("width","100%");s.setAttribute("height","40");
+  const ps=w.prices.map(p=>p.p);if(ps.length<2)return s;const mn=Math.min(...ps),mx=Math.max(...ps),r=mx-mn||1;
+  const pts=ps.map((p,i)=>(i/(ps.length-1)*196+2)+","+(36-(p-mn)/r*32)).join(" ");
+  const pl=document.createElementNS(ns,"polyline");pl.setAttribute("points",pts);pl.setAttribute("fill","none");pl.setAttribute("stroke",ps[ps.length-1]>=ps[0]?"var(--up)":"var(--dn)");pl.setAttribute("stroke-width","2");s.append(pl);return s}
+function el(t,c,x){const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+
+function render(){
+  const al=$("alerts");al.textContent="";alertsList().forEach(t=>al.append(el("div","alert",t)));
+  const sb=$("stats");sb.textContent="";
+  [["⭐",S.watch.length,"Watching"],["🔔",alertsList().length,"Alerts"],["✅",S.tasks.filter(t=>!t.done).length,"Open tasks"],["💬",S.chats.length,"Chats"]].forEach(([i,n,lb])=>{const d=el("div","stat");d.append(el("div","n",i+" "+n),el("div","note",lb));sb.append(d)});
+  document.querySelectorAll("#effort button").forEach(b=>b.classList.toggle("on",b.dataset.e===S.effort));
+  $("effNote").textContent={low:"Fast, brief answers",medium:"Balanced depth and speed",high:"Deepest reasoning, slower"}[S.effort];
+  const l=$("chatList");l.textContent="";
+  S.chats.forEach(c=>{const d=el("div","item"),b=el("button",c.id===S.cur?"on":"",c.title);b.onclick=()=>{S.cur=c.id;render()};
+    const x=el("button","","✕");x.title="Delete chat";x.onclick=()=>{S.chats=S.chats.filter(k=>k.id!==c.id);if(!S.chats.length)newChat(true);else if(S.cur===c.id)S.cur=S.chats[0].id;render();save()};
+    d.append(b,x);l.append(d)});
+  const m=$("msgs");m.textContent="";const c=cur();
+  if(c&&!c.msgs.length)m.append(el("div","note","Ask about any company, when to buy, or when to stay away. I remember our past chats and use your profile and watchlist."));
+  (c?c.msgs:[]).forEach(x=>{const d=el("div","m "+x.role);fmt(d,x.content);m.append(d)});m.scrollTop=m.scrollHeight;
+  const ch=$("chips");ch.textContent="";
+  if(c&&!c.msgs.length)CHIPS.forEach(t=>{const b=el("button","",t);b.onclick=()=>{$("inp").value=t;send()};ch.append(b)});
+  $("memNote").textContent=S.memory?"🧠 I'm remembering what you've told me across chats (see Profile).":"";
+  $("memView").textContent=S.memory?"AI memory: "+S.memory:"AI memory is empty so far.";
+  const g=$("wGrid");g.textContent="";
+  if(!S.watch.length)g.append(el("div","note","Your watchlist is empty. Add a ticker above."));
+  S.watch.forEach(w=>{const c=el("div","card"),l=last(w),pv=w.prices[w.prices.length-2];
+    const top=el("div");top.style.cssText="display:flex;justify-content:space-between;align-items:center";
+    const rm=el("button","","✕");rm.onclick=()=>{S.watch=S.watch.filter(z=>z!==w);render();save()};top.append(el("span","sym",w.sym),rm);c.append(top);
+    if(l){const p=el("div","price",money(l.p));if(pv){const ch=(l.p-pv.p)/pv.p*100,s=el("span",ch>=0?"up":"dn"," "+(ch>=0?"▲":"▼")+Math.abs(ch).toFixed(1)+"%");s.style.fontSize="13px";p.append(s)}c.append(p,el("div","note","as of "+l.t))}
+    else c.append(el("div","note","No price yet"));
+    c.append(spark(w));
+    const meta=el("div");if(w.earn)meta.append(el("span","pill","📅 Earnings "+w.earn));if(w.buy)meta.append(el("span","pill","Buy ≤ "+money(w.buy)));if(w.sell)meta.append(el("span","pill","Sell ≥ "+money(w.sell)));c.append(meta);
+    const r=el("div","row"),pi=el("input");pi.type="number";pi.step="any";pi.placeholder="Current price";pi.style.width="110px";
+    const ub=el("button","pri","Update");ub.onclick=()=>{const v=parseFloat(pi.value);if(!(v>0))return;const d=today();
+      if(l&&l.t===d)l.p=v;else w.prices.push({t:d,p:v});w.prices=w.prices.slice(-60);render();save()};
+    const ab=el("button","","Ask AI");ab.onclick=()=>{tab("chat");$("inp").value=`Should I buy ${w.sym} now? Use my profile and the figures I've entered.`;$("inp").focus()};
+    r.append(pi,ub,ab);c.append(r);g.append(c)});
+  const t=$("taskList");t.textContent="";if(!S.tasks.length)t.append(el("div","note","No tasks yet."));
+  S.tasks.forEach(k=>{const d=el("div","task"+(k.done?" done":"")),cb=el("input");cb.type="checkbox";cb.checked=k.done;cb.onchange=()=>{k.done=cb.checked;render();save()};
+    d.append(cb,el("span","",k.text));if(k.due)d.append(el("span","pill","Due "+k.due));
+    const x=el("button","","✕");x.onclick=()=>{S.tasks=S.tasks.filter(z=>z!==k);render();save()};d.append(x);t.append(d)});
+}
+function initProfile(){const p=S.profile,map={pGoal:"goal",pRisk:"risk",pHor:"hor",pAmt:"amt",pNotes:"notes"};
+  Object.entries(map).forEach(([id,k])=>{const e=$(id);if(p[k]!=null)e.value=p[k];else p[k]=e.value;e.onchange=e.oninput=()=>{p[k]=e.value;save()}})}
+
+function context(){
+  const p=S.profile;let s=`USER PROFILE: goal=${p.goal}; risk=${p.risk}; horizon=${p.hor}; monthly=$${p.amt||"unspecified"}; notes=${p.notes||"none"}.\nTODAY: ${today()}.\nANSWER DEPTH: ${{low:"brief, under 120 words",medium:"concise, under 300 words",high:"thorough and well structured, up to 600 words"}[S.effort]}.\n`;
+  s+="WATCHLIST: "+(S.watch.length?S.watch.map(w=>{const l=last(w),h=w.prices.slice(-5).map(x=>x.p).join(",");return `${w.sym} last ${l?money(l.p)+" on "+l.t:"n/a"} (recent: ${h||"none"}); buy-below ${w.buy||"-"}; sell-above ${w.sell||"-"}; earnings ${w.earn||"-"}`}).join(" | "):"empty")+"\n";
+  s+="OPEN TASKS: "+(S.tasks.filter(t=>!t.done).map(t=>t.text).join("; ")||"none")+"\n";
+  s+="LONG-TERM MEMORY: "+(S.memory||"none")+"\n";
+  const past=S.chats.filter(c=>c.id!==S.cur&&c.msgs.length).slice(0,5).map(c=>`[${c.title}] `+c.msgs.slice(-4).map(m=>m.role[0].toUpperCase()+": "+m.content.slice(0,300)).join(" / "));
+  return s+"PAST CHATS: "+(past.join("\n")||"none")}
+
+async function send(){
+  const inp=$("inp"),text=inp.value.trim();if(!text||busy)return;const c=cur();inp.value="";
+  c.msgs.push({role:"user",content:text});if(c.title==="New chat")c.title=text.slice(0,40);
+  const reply={role:"assistant",content:""};c.msgs.push(reply);render();const node=$("msgs").lastChild;busy=true;$("send").disabled=true;node.classList.add("typing");$("stop").hidden=false;
+  if(!sample){reply.content="AI replies work when this page is opened in claude.ai.";node.textContent=reply.content;busy=false;$("send").disabled=false;save();return}
+  try{
+    ctl=new AbortController();const hist=c.msgs.slice(0,-1).slice(-14).map(m=>({role:m.role,content:m.content}));
+    const r=await sample([{role:"user",content:SYSTEM+"\n\n"+context()+"\n\nConversation follows."},{role:"assistant",content:"Understood."},...hist],
+      {cache:false,effort:S.effort,signal:ctl.signal,onText:({text})=>{reply.content=text;node.classList.remove("typing");fmt(node,text);$("msgs").scrollTop=1e9}});
+    reply.content=r.text||reply.content;fmt(node,reply.content);
+  }catch(e){reply.content=reply.content||(e&&e.code==="cancelled"?"Stopped.":e&&e.code==="rate_limited"?"Too many requests, try again shortly.":"Sorry, I couldn't get a reply.");node.textContent=reply.content}
+  busy=false;$("send").disabled=false;$("stop").hidden=true;node.classList.remove("typing");save();updateMemory(text,reply.content);
+}
+async function updateMemory(u,a){
+  if(!sample||!a)return;
+  try{const r=await sample(`Update this long-term memory about an investing app user. Keep only durable facts (goals, holdings, risk comfort, preferences, concerns, decisions made). Max 900 characters, plain text, no preamble. If nothing new, return it unchanged.\n\nCURRENT MEMORY: ${S.memory||"(empty)"}\n\nLATEST EXCHANGE\nUser: ${u}\nAssistant: ${a.slice(0,800)}`,{cache:false,effort:"low"});
+    if(r.text){S.memory=r.text.trim().slice(0,1000);render();save()}}catch(e){}}
+
+function tab(t){["chat","watch","tasks","prof"].forEach(k=>{$("v-"+k).hidden=k!==t;$("t-"+k).classList.toggle("on",k===t)})}
+["chat","watch","tasks","prof"].forEach(k=>$("t-"+k).onclick=()=>tab(k));
+$("send").onclick=send;$("inp").onkeydown=e=>{if(e.key==="Enter")send()};$("newChat").onclick=()=>newChat();
+$("tAdd").onclick=()=>{const v=$("tIn").value.trim();if(!v)return;S.tasks.unshift({text:v,done:false,due:$("tDue").value||""});$("tIn").value="";$("tDue").value="";render();save()};
+$("tIn").onkeydown=e=>{if(e.key==="Enter")$("tAdd").click()};
+$("wAdd").onclick=()=>{const s=$("wSym").value.trim().toUpperCase().replace(/[^A-Z.\-]/g,"");if(!s||S.watch.some(w=>w.sym===s))return;
+  S.watch.push({id:uid(),sym:s,earn:$("wEarn").value||"",buy:parseFloat($("wBuy").value)||0,sell:parseFloat($("wSell").value)||0,prices:[]});
+  ["wSym","wEarn","wBuy","wSell"].forEach(i=>$(i).value="");render();save()};
+$("clrMem").onclick=()=>{S.memory="";render();save()};
+function fmt(n,t){n.textContent="";String(t).replace(/^#+\s*/gm,"").split("**").forEach((p,i)=>{if(i%2){const b=document.createElement("strong");b.textContent=p;n.append(b)}else n.append(document.createTextNode(p))})}
+document.querySelectorAll("#effort button").forEach(b=>b.onclick=()=>{S.effort=b.dataset.e;render();save()});
+$("stop").onclick=()=>{if(ctl)ctl.abort()};
+load();
+</script>
+</body>
+</html>
